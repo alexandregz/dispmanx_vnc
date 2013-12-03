@@ -50,6 +50,7 @@ int r_x0, r_y0, r_x1, r_y1;
 #endif
 
 
+
 jmp_buf env;
 int ufile;
 int mouse_last = 0;
@@ -519,12 +520,20 @@ int main(int argc, char *argv[])
 
 	uint32_t        screen = 0;
 
+	int vnc_port = 0;
+
 	for (x=1; x<argc; x++) {
 		if (strcmp(argv[x], "-r")==0)
 			relative_mode = 1;
 		if (strcmp(argv[x], "-a")==0)
 			relative_mode = 0;
+
+		// Alexandre Espinosa Menor (2013-12-03): We can change the default port (useful for me :-)
+		if (strcmp(argv[x], "-p")==0 ) {
+			vnc_port = atoi(argv[x+1]);
+		}
 	}
+
 
 	if (signal(SIGINT, sig_handler) == SIG_ERR) {
 		fprintf(stderr, "error setting sighandler\n");
@@ -572,6 +581,12 @@ int main(int argc, char *argv[])
 	server->alwaysShared=(1==1);
 	server->kbdAddEvent = dokey;
 	server->ptrAddEvent = doptr;
+
+	// Alexandre Espinosa Menor (2013-12-03): We can change the port into rfbScreenInfoPtr (useful for me :-)
+	if(vnc_port) {
+		printf("Using %d port\n", vnc_port);
+		server->port = vnc_port;
+	}
 
 	printf("Server bpp:%d\n", server->serverFormat.bitsPerPixel);
 	printf("Server bigEndian:%d\n", server->serverFormat.bigEndian);
